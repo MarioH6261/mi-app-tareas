@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Tareas</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
+        h1 { text-align: center; color: #333; }
+        input { padding: 10px; width: 70%; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        .tarea { margin-top: 10px; background: white; border: 1px solid #ddd; padding: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        button.borrar { background-color: #dc3545; padding: 5px 10px; }
+        button.borrar:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+    <h1>Mis Tareas</h1>
+    <input type="text" id="nuevaTarea" placeholder="Escribe una tarea...">
+    <button onclick="agregarTarea()">Agregar</button>
+    <div id="listaTareas"></div>
+
+    <script>
+        // Esta es la dirección de tu servidor local que dejamos encendido
+        const URL_BACKEND = '';
+
+        // Función para cargar las tareas cuando abres la página
+        async function cargarTareas() {
+            const res = await fetch(`${URL_BACKEND}/tareas`);
+            const tareas = await res.json();
+if (!tareas) return; // <-- AGREGA ESTA LÍNEA
+const lista = document.getElementById('listaTareas');
+lista.innerHTML = '';
+tareas.forEach(t => {
+                lista.innerHTML += `<div class="tarea"><span>${t.titulo}</span> <button class="borrar" onclick="borrarTarea(${t.id})">X</button></div>`;
+            });
+        }
+
+        // Función para enviar una tarea nueva al servidor
+        async function agregarTarea() {
+            const input = document.getElementById('nuevaTarea');
+            const titulo = input.value;
+            if (!titulo) return; // Si está vacío, no hace nada
+            await fetch(`${URL_BACKEND}/tareas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo })
+            });
+            input.value = ''; // Limpia el cuadro de texto
+            cargarTareas(); // Recarga la lista
+        }
+
+        // Función para borrar una tarea
+        async function borrarTarea(id) {
+            await fetch(`${URL_BACKEND}/tareas/${id}`, { method: 'DELETE' });
+            cargarTareas(); // Recarga la lista
+        }
+
+        // Ejecuta la carga al abrir la página
+        cargarTareas();
+    </script>
+</body>
+</html>
